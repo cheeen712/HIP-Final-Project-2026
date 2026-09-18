@@ -1,2 +1,2 @@
 
-**Live app:** https://cheeen712.github.io/HIP-Final-Project-2026/
+**Live app:** https://cheeen712.github.io/HIP-Final-Project-2026/index.html
