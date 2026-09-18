@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>費茨法則實驗 - 急診室醫療介面</title>
+
+    <style>
+
+        body {
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            height: 100vh;
+
+            background-color: #f5f5f5;
+
+            font-family: Arial, sans-serif;
+
+        }
+
+        #canvas {
+
+            border: 2px solid #333;
+
+            background-color: #e0e0e0;
+
+            position: relative;
+
+        }
+
+        button {
+
+            padding: 10px 20px;
+
+            font-size: 16px;
+
+            margin: 10px;
+
+        }
+
+        #result {
+
+            margin-top: 20px;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div>
+
+        <button id="startButton">開始實驗</button>
+
+        <canvas id="canvas" width="800" height="600" style="display:none;"></canvas>
+
+        <div id="result"></div>
+
+        <a id="downloadLink" style="display:none;">下載 CSV 數據</a>
+
+    </div>
+
+    <script>
+
+        const canvas = document.getElementById('canvas');
+
+        const ctx = canvas.getContext('2d');
+
+        const startButton = document.getElementById('startButton');
+
+        const resultDiv = document.getElementById('result');
+
+        const downloadLink = document.getElementById('downloadLink');
+
+
+
+        let trials = [];
+
+        let trialCount = 0;
+
+        let startTime;
+
+        
+
+        startButton.addEventListener('click', startExperiment);
+
+
+
+        function startExperiment() {
+
+            trials = [];
+
+            trialCount = 0;
+
+            startButton.style.display = 'none';
+
+            canvas.style.display = 'block';
+
+            drawTarget();
+
+        }
+
+
+
+        function drawTarget() {
+
+            const distance = Math.random() * 400 + 100; // 隨機距離
+
+            const width = Math.random() * 50 + 30; // 隨機寬度
+
+            const id = width > 60 ? '低ID' : '高ID'; // 設定目標ID
+
+            
+
+            const targetX = Math.random() * (canvas.width - width - distance) + distance;
+
+            const targetY = Math.random() * (canvas.height - width - distance) + distance;
+
+
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "red";
+
+            ctx.beginPath();
+
+            ctx.arc(targetX, targetY, width / 2, 0, Math.PI * 2);
+
+            ctx.fill();
+
+
+
+            canvas.addEventListener('click', (event) => handleCanvasClick(event, targetX, targetY, distance, width, id));
+
+        }
+
+
+
+        function handleCanvasClick(event, targetX, targetY, distance, width, id) {
+
+            const rect = canvas.getBoundingClientRect();
+
+            const clickX = event.clientX - rect.left;
+
+            const clickY = event.clientY - rect.top;
+
+
+
+            const isInside = Math.sqrt((clickX - targetX) ** 2 + (clickY - targetY) ** 2) < (width / 2);
+
+
+
+            if (isInside) {
+
+                const movementTime = Date.now() - startTime;
+
+                trials.push({
+
+                    Trial: trialCount + 1,
+
+                    Distance_A: Math.round(distance),
+
+                    Width_W: Math.round(width),
+
+                    ID: id,
+
+                    MovementTime_MT: movementTime
+
+                });
+
+                trialCount++;
+
+
+
+                if (trialCount < 20) {
+
+                    startTime = Date.now();
+
+                    drawTarget();
+
+                } else {
+
+                    endExperiment();
+
+                }
+
+            }
+
+        }
+
+
+
+        function endExperiment() {
+
+            canvas.style.display = 'none';
+
+            resultDiv.innerHTML = `<p>實驗完成！共 ${trialCount} 次試驗。</p>`;
+
+            downloadLink.style.display = 'inline';
+
+            downloadLink.href = createCSV();
+
+            downloadLink.download = `experiment_results.csv`;
+
+            downloadLink.innerText = '下載 CSV 數據';
+
+        }
+
+
+
+        function createCSV() {
+
+            const header = 'Trial,Distance_A,Width_W,ID,MovementTime_MT\n';
+
+            const rows = trials.map(trial => 
+
+                `${trial.Trial},${trial.Distance_A},${trial.Width_W},${trial.ID},${trial.MovementTime_MT}`
+
+            ).join('\n');
+
+            return 'data:text/csv;charset=utf-8,' + encodeURI(header + rows);
+
+        }
+
+    </script>
+
+</body>
+
+</html>
